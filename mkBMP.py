@@ -59,11 +59,12 @@ def genBitMap(array):
     rowLen = len(array[0])  #How many rows this bitmap contains
     padding = 4 - ((rowLen * 3) % 4) #Each row must be a multiple of 4, if not padding must be appended.
     bitmap = bytearray()
-   
-    for i in reversed(range(len(array))): #Each Row
+    print "rowLen", rowLen
+    for i in reversed(range(len(array))): #Each Row 
         for j in range(len(array[i])): #Each Col
+                print (array[i][j]),
                 bitmap += charToRGB(array[i][j])
-           
+          
         if(padding != 4):
             for k in range(padding):
                 bitmap += b'\x00'
@@ -75,6 +76,8 @@ def genBitMap(array):
 #This can read DNA letters (GTAC) and give each a colour
 #Colour is 24 bit encoded RGB
 def charToRGB(char):
+
+    
     if(char.lower() == "g"):
         return encodeRGB(255,0,0) #G is Red
     if(char.lower() == "t"):
@@ -94,7 +97,31 @@ def charToRGB(char):
 with open ('dna.csv', 'r') as readObject:
     csvReader = reader(readObject)
 #list the rows in to a 2d array
-    imageArray = list(csvReader)
+  #  imageArray = list(csvReader)
+
+
+#Read as a string and make an array 
+with open ('dna.txt', 'r') as readObject:
+    rawData=readObject.read()
+    rawLength=len(rawData)
+
+
+n=255
+lines = [rawData[i:i+n].strip() for i in range (0,rawLength, n)]
+
+
+imageArray=[]
+for line in lines:
+    newCharArray=[]
+    for letter in line:
+        newCharArray.append(letter)
+    imageArray.append(newCharArray)
+
+
+        
+
+ 
+        
 
 
 pixelArray = genBitMap(imageArray)
