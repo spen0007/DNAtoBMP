@@ -1,5 +1,7 @@
 import struct
 from csv import reader
+import math
+import sys
 
 ################################################################################
 #                                   DNA Sequence to bitmap v1.1
@@ -28,14 +30,15 @@ def winDibHeader24(width, height, bitmapSize):
     dataArray += b'\x01\x00' #Planes, always 1
     dataArray += b'\x18\x00' #Bits per pixel
     dataArray += b'\x00\x00\x00\x00' #Pixel array compression. None in this case.
-    dataArray += b'\x44\x61\x6E\x69' #intToByteString(bitmapSize, 4) #Bitmap size. Not required for BI_RGB
+    dataArray += b'\x00\x00\x00\x00' #intToByteString(bitmapSize, 4) #Bitmap size. Not required for BI_RGB
     dataArray += b'\x13\x0B\x00\x00' #Print resolution (pixel/metter) horizontal
     dataArray += b'\x13\x0B\x00\x00' #Print resolution (pixel/metter) vertical
-    dataArray += b'\x65\x6C\x6C\x65' #Colors in pallet. Does not apply in 24-bit images.
+    dataArray += b'\x00\x00\x00\x00' #Colors in pallet. Does not apply in 24-bit images.
     dataArray += b'\x00\x00\x00\x00' #Important colors. All in this case.
 
     return dataArray
 
+#BMP is encoded as BGR not RGB 
 def encodeRGB(red, green, blue):
     rgbArray = [blue, green, red] #Little endian.
     return bytearray(rgbArray)
@@ -59,15 +62,31 @@ def genBitMap(array):
     rowLen = len(array[0])  #How many rows this bitmap contains
     padding = 4 - ((rowLen * 3) % 4) #Each row must be a multiple of 4, if not padding must be appended.
     bitmap = bytearray()
-    print "rowLen", rowLen
+    
     for i in reversed(range(len(array))): #Each Row 
         for j in range(len(array[i])): #Each Col
-                print (array[i][j]),
+                
                 bitmap += charToRGB(array[i][j])
           
         if(padding != 4):
             for k in range(padding):
                 bitmap += b'\x00'
+
+
+    return bitmap
+
+def genBitMap2(array, rowLen, rows):
+    
+   
+    useThisManyBytes=int(rows*rowLen)  #fixes nasty half row endings.
+    
+    bitmap = bytearray()
+    
+    for i in reversed(range(useThisManyBytes)): #read it backwards!
+              
+                bitmap += charToRGB(array[i])
+          
+    
 
 
     return bitmap
@@ -90,44 +109,27 @@ def charToRGB(char):
     return encodeRGB(255,255,255) #Default is white if not a DNA word
 
 ################################################################################
-#                               SCRIPT BEGINS
+#                               Start
 ################################################################################
 
-#Create pixel array + get its properties dynamicaly
-with open ('dna.csv', 'r') as readObject:
-    csvReader = reader(readObject)
-#list the rows in to a 2d array
-  #  imageArray = list(csvReader)
+#see what args we have
 
+
+
+
+#Create pixel array + get its properties dynamicaly
 
 #Read as a string and make an array 
 with open ('dna.txt', 'r') as readObject:
-    rawData=readObject.read()
-    rawLength=len(rawData)
+    imageArray=readObject.read()
 
-
-n=255
-lines = [rawData[i:i+n].strip() for i in range (0,rawLength, n)]
-
-
-imageArray=[]
-for line in lines:
-    newCharArray=[]
-    for letter in line:
-        newCharArray.append(letter)
-    imageArray.append(newCharArray)
-
-
-        
-
- 
-        
-
-
-pixelArray = genBitMap(imageArray)
+rowLen = 256  #How many rows this bitmap contains
+rows = math.floor(len(imageArray)/rowLen)  # BMP can't have incomplete rows, no padding so chop the incomplete row
+pixelArray = genBitMap2(imageArray, rowLen, rows)
 #size the bitmap according to the number of elements in the array (DNA words per row in the CSV)
-width = len(imageArray[0])
-height = len(imageArray)
+
+width = rowLen
+height = rows
 size = len(pixelArray)
 
 #Create both the dib and bmp headers given the pixel array.
