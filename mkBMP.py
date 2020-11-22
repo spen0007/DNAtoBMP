@@ -129,24 +129,24 @@ def main(argv):
     try:
         opts, args = getopt.getopt(argv,"hi:o:s:",["inputfile=","outputfile=","help","scale"])
     except getopt.GetoptError:
-        print 'mkBMP.py -i <inputfile> -o <outputfile> -s <scalefactor>'
-        print 'mkBMP.py --inputfile <inputfile> --outputfile <outputfile> --scalefactor <scalefactor>'
+        print "mkBMP.py -i <inputfile> -o <outputfile> -s <scalefactor>"
+        print "mkBMP.py --inputfile <inputfile> --outputfile <outputfile> --scalefactor <scalefactor>"
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
-            print 'mkBMP.py -i <inputfile> -o <outputfile> -s <scalefactor>'
-            print 'mkBMP.py --inputfile <inputfile> --outputfile <outputfile> --scalefactor <scalefactor>'
-            print ''
-            print 'input file is a txt file with genetic data'
-            print 'input file must only contain GTAC with no control codes such as line feed or carriage return'
-            print ''
-            print 'output file is the destination of the bitmap'
-            print 'NB if the file exists it will be clobbered'
-            print ''
-            print 'scale factor is a factor to enlarge each pixel by'
-            print 'scale factor must be an unsigned integer ie >1 and a whole number'
-            print 'we are not shrinking the bitmap and we are not having half pixels'
-            print ''
+            print "mkBMP.py -i <inputfile> -o <outputfile> -s <scalefactor>"
+            print "mkBMP.py --inputfile <inputfile> --outputfile <outputfile> --scalefactor <scalefactor>"
+            print ""
+            print "input file is a txt file with genetic data"
+            print "input file must only contain GTAC with no control codes such as line feed or carriage return"
+            print ""
+            print "output file is the destination of the bitmap"
+            print "NB if the file exists it will be clobbered"
+            print ""
+            print "scale factor is a factor to enlarge each pixel by"
+            print "scale factor must be an unsigned integer ie >1 and a whole number"
+            print "we are not shrinking the bitmap and we are not having half pixels"
+            print ""
             sys.exit()
         elif opt in ("-i", "--inputfile"):
             inputfile = arg
@@ -156,28 +156,28 @@ def main(argv):
             strScale = arg
 
     if len(inputfile)==0:
-        print 'No input file given'
+        print "No input file given"
         print "mkBMP.py -h for help"
         sys.exit(2)
     if len(outputfile)==0:
-        print 'No output file given'
+        print "No output file given"
         print "mkBMP.py -h for help"
         sys.exit(2)    
-    print 'Reading genetic data from: ', inputfile
-    print 'Writing bitmap to: ', outputfile  
+    print "Reading genetic data from: ", inputfile
+    print "Writing bitmap to: ", outputfile  
     try :
         scale = int(strScale)
     except:
-        print 'Cannot cast ' + strScale + ' to int'
-        print 'scalefactor must be >1 and a whole number'
+        print "Cannot cast " + strScale +  " to int"
+        print "scalefactor must be >1 and a whole number"
         exit (2)
     if scale <1:
         scale = 1
-        print 'Warning: scale was set to ', scale
-        print 'Shrinking is not implemented'
-        print 'Resetting to scalefactor = 1'
-        print '' 
-    print 'Scale factor: ', scale 
+        print "Warning: scale was set to ", scale
+        print "Shrinking is not implemented"
+        print "Resetting to scalefactor = 1"
+        print "" 
+    print "Scale factor: ", scale 
     
 
 
