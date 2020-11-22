@@ -2,6 +2,7 @@ import struct
 from csv import reader
 import math
 import sys
+import getopt
 
 ################################################################################
 #                                   DNA Sequence to bitmap v1.1
@@ -75,18 +76,23 @@ def genBitMap(array):
 
     return bitmap
 
-def genBitMap2(array, rowLen, rows):
+def genBitMap2(array, rowLen, rows, scale):
     
    
     useThisManyBytes=int(rows*rowLen)  #fixes nasty half row endings.
     
     bitmap = bytearray()
-    
+    lineBitmap = bytearray()
+    pixelCounter =0
     for i in reversed(range(useThisManyBytes)): #read it backwards!
-              
-                bitmap += charToRGB(array[i])
-          
-    
+                pixelCounter += 1
+                for l in range(scale):
+                    lineBitmap += charToRGB(array[i]) #add the pixel scale times
+                if pixelCounter == rowLen:
+                    pixelCounter =0
+                    for m in range(scale):
+                        bitmap += lineBitmap
+                    lineBitmap = bytearray()    
 
 
     return bitmap
@@ -113,34 +119,95 @@ def charToRGB(char):
 ################################################################################
 
 #see what args we have
+ 
+def main(argv):
 
 
+   
+    inputfile = ''
+    outputfile = ''
+    try:
+        opts, args = getopt.getopt(argv,"hi:o:s:",["inputfile=","outputfile=","help","scale"])
+    except getopt.GetoptError:
+        print 'mkBMP.py -i <inputfile> -o <outputfile> -s <scalefactor>'
+        print 'mkBMP.py --inputfile <inputfile> --outputfile <outputfile> --scalefactor <scalefactor>'
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt == '-h':
+            print 'mkBMP.py -i <inputfile> -o <outputfile> -s <scalefactor>'
+            print 'mkBMP.py --inputfile <inputfile> --outputfile <outputfile> --scalefactor <scalefactor>'
+            print ''
+            print 'input file is a txt file with genetic data'
+            print 'input file must only contain GTAC with no control codes such as line feed or carriage return'
+            print ''
+            print 'output file is the destination of the bitmap'
+            print 'NB if the file exists it will be clobbered'
+            print ''
+            print 'scale factor is a factor to enlarge each pixel by'
+            print 'scale factor must be an unsigned integer ie >1 and a whole number'
+            print 'we are not shrinking the bitmap and we are not having half pixels'
+            print ''
+            sys.exit()
+        elif opt in ("-i", "--inputfile"):
+            inputfile = arg
+        elif opt in ("-o", "--outputfile"):
+            outputfile = arg
+        elif opt in ("-s", "--scalefactor"):
+            strScale = arg
+
+    if len(inputfile)==0:
+        print 'No input file given'
+        print "mkBMP.py -h for help"
+        sys.exit(2)
+    if len(outputfile)==0:
+        print 'No output file given'
+        print "mkBMP.py -h for help"
+        sys.exit(2)    
+    print 'Reading genetic data from: ', inputfile
+    print 'Writing bitmap to: ', outputfile  
+    try :
+        scale = int(strScale)
+    except:
+        print 'Cannot cast ' + strScale + ' to int'
+        print 'scalefactor must be >1 and a whole number'
+        exit (2)
+    if scale <1:
+        scale = 1
+        print 'Warning: scale was set to ', scale
+        print 'Shrinking is not implemented'
+        print 'Resetting to scalefactor = 1'
+        print '' 
+    print 'Scale factor: ', scale 
+    
 
 
 #Create pixel array + get its properties dynamicaly
 
 #Read as a string and make an array 
-with open ('dna.txt', 'r') as readObject:
-    imageArray=readObject.read()
-
-rowLen = 256  #How many rows this bitmap contains
-rows = math.floor(len(imageArray)/rowLen)  # BMP can't have incomplete rows, no padding so chop the incomplete row
-pixelArray = genBitMap2(imageArray, rowLen, rows)
-#size the bitmap according to the number of elements in the array (DNA words per row in the CSV)
-
-width = rowLen
-height = rows
-size = len(pixelArray)
+    with open (inputfile, 'r') as readObject:
+        imageArray=readObject.read()
+    rowLen = 256  #How many rows this bitmap contains before scaling
+    rows = math.floor(len(imageArray)/rowLen)  # BMP can't have incomplete rows, no padding so chop the incomplete row
+    pixelArray = genBitMap2(imageArray, rowLen, rows, scale)
+#size the bitmap according to the number of elements in the array 
+    
+    
+    width = rowLen*scale #our scale factor
+    height = rows*scale
+    size = len(pixelArray)
 
 #Create both the dib and bmp headers given the pixel array.
-dibHeader = winDibHeader24(width,height, size)
-bmpHeader = BmpHeader(len(dibHeader), len(pixelArray))
+    dibHeader = winDibHeader24(width,height, size)
+    bmpHeader = BmpHeader(len(dibHeader), len(pixelArray))
 
 
 
-f = open("test.bmp", 'wb+') #Read/Write in binary format. **Overwrite** old file or create a new one.
-f.write(bmpHeader)
-f.write(dibHeader)
-f.write(pixelArray)
-f.close()
+    f = open(outputfile, 'wb+') #Read/Write in binary format. **Overwrite** old file or create a new one.
+    f.write(bmpHeader)
+    f.write(dibHeader)
+    f.write(pixelArray)
+    f.close()
+
+if __name__ == "__main__":
+   main(sys.argv[1:])  
 
