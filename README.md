@@ -16,7 +16,7 @@ scale factor must be a positive whole number
 scale factor 16 provides a 4096 pixel width
 
 default colour scheme can be overriden
-the switches are -g -t -a -c for guanine, thymine, adenine, and cytosine respectively
+the switches are -g -t -a -c for guanine, thymine, adenine, and cytosine respectively.
 the colour should be specified as a 24bit hex colour
 
 go to https://htmlcolorcodes.com for a colour picker which provides hexcodes
