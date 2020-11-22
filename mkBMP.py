@@ -185,7 +185,10 @@ def main(argv):
 
 #Read as a string and make an array 
     with open (inputfile, 'r') as readObject:
-        imageArray=readObject.read()
+        rawArray=readObject.read()
+
+        stripped = lambda s: "".join(i for i in s if 31 < ord(i) < 127)
+        imageArray = stripped(rawArray)
     rowLen = 256  #How many rows this bitmap contains before scaling
     rows = math.floor(len(imageArray)/rowLen)  # BMP can't have incomplete rows, no padding so chop the incomplete row
     pixelArray = genBitMap2(imageArray, rowLen, rows, scale)
