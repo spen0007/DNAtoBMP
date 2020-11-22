@@ -197,8 +197,8 @@ def main(argv):
         scale = 1
         print ("Warning: scale was set to ", scale)
         print ("Shrinking is not implemented")
-        print ("Resetting to scalefactor = 1")
-        print ("") 
+        print ("Resetting to scalefactor = 1\n\n")
+   
     print ("Scale factor: ", scale) 
     
 
