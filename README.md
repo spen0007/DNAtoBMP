@@ -3,11 +3,11 @@ take GTAC DNA words in a text file and turn them in to a bitmap representing the
 text file must contain a single string with no control characters. String must contain only G,C,A,T and is not case dependent 
 
 
-mkBMP.py -i <inputfile> -o <outputfile> -s <scalefactor>
+mkBMP.py -i {inputfile} -o {outputfile} -s {scalefactor}
 
 OR
 
-mkBMP.py --inputfile <inputfile> --outputfile <outputfile> --scalefactor <scalefactor>
+mkBMP.py --inputfile {inputfile} --outputfile {outputfile} --scalefactor {scalefactor}
          
 input file is a txt file with genetic data
 input file must only contain GTAC with no control codes such as line feed or carriage return
