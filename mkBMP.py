@@ -9,11 +9,9 @@ import struct
 #           
 ################################################################################
 
-
-
-
 #Creates a bitmap header
 def BmpHeader(dibHeaderSize, bitmapSize):
+
     dataArray = bytearray()
     dataArray += b'\x42\x4D' #BM id feild
     dataArray += intToByteString(14 + dibHeaderSize + bitmapSize, 4) #Size of the bitmap.
@@ -25,6 +23,7 @@ def BmpHeader(dibHeaderSize, bitmapSize):
 
 #Create a pixel array representing a DIB header for a 24-bit image.
 def winDibHeader24(width, height, bitmapSize):
+
     dataArray = bytearray()
     dataArray += b'\x28\x00\x00\x00' #Dib header size.
     dataArray += intToByteString(width, 4) #Width
@@ -42,6 +41,7 @@ def winDibHeader24(width, height, bitmapSize):
 
 #BMP is encoded as BGR not RGB 
 def encodeRGB(red, green, blue):
+
     rgbArray = [blue, green, red] #Little endian.
     return bytearray(rgbArray)
 
@@ -49,6 +49,7 @@ def encodeRGB(red, green, blue):
 # Source: https://docs.python.org/2/library/struct.html
 
 def intToByteString(int, size):
+
     if(size == 1):
         return struct.pack("<B", int) #unsigned char
     if(size == 2):
@@ -61,10 +62,10 @@ def intToByteString(int, size):
 #Given a two dimentional array of DNA words (as GTAC), representing colors i.e r for G, create a bytearray
 
 def genBitMap(array, guanine, thymine, adenine, cytosine):
+    
     rowLen = len(array[0])  #How many rows this bitmap contains
     padding = 4 - ((rowLen * 3) % 4) #Each row must be a multiple of 4, if not padding must be appended.
     bitmap = bytearray()
-    
     for i in reversed(range(len(array))): #Each Row 
         for j in range(len(array[i])): #Each Col
                 
@@ -73,15 +74,11 @@ def genBitMap(array, guanine, thymine, adenine, cytosine):
         if(padding != 4):
             for k in range(padding):
                 bitmap += b'\x00'
-
-
     return bitmap
 
 def genBitMap2(array, rowLen, rows, scale, guanine, thymine, adenine, cytosine):
     
-   
     useThisManyBytes=int(rows*rowLen)  #fixes nasty half row endings.
-    
     bitmap = bytearray()
     lineBitmap = bytearray()
     pixelCounter =0
@@ -92,19 +89,18 @@ def genBitMap2(array, rowLen, rows, scale, guanine, thymine, adenine, cytosine):
                 if pixelCounter == rowLen:
                     pixelCounter =0
                     for m in range(scale):
-                        bitmap += lineBitmap
+                        bitmap += lineBitmap # add the line scale times
                     lineBitmap = bytearray()    
-
-
     return bitmap
 
-#Convert a character/string into an rgb byte array.
-#This can read DNA letters (GTAC) and give each a colour
-#Colour is 24 bit encoded RGB
+
+
 def charToRGB(char, guanine, thymine, adenine, cytosine):
-    # GTAC is passed in as string representing hex colour code
-    
-    
+
+    # GTAC is passed in as a tuple (RGB)
+    #Convert a character/string into an rgb byte array.
+    #This can read DNA letters (GTAC) and give each a colour
+    #Colour is 24 bit encoded RGB
 
     if(char.lower() == "g"):
         return encodeRGB(guanine[0],guanine[1],guanine[2]) #G is Red
@@ -114,21 +110,20 @@ def charToRGB(char, guanine, thymine, adenine, cytosine):
         return encodeRGB(adenine[0],adenine[1],adenine[2]) #A is Blue
     if(char.lower() == "c"):
         return encodeRGB(cytosine[0],cytosine[1],cytosine[2]) #C is Black
-
     return encodeRGB(255,255,255) #Default is white if not a DNA word
 
 
 def hex2rgb(h):
+
+    #convert '24bit' hex string into a tuple
     return tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
 
 
-
 ################################################################################
-#                               Start
+#                               main
 ################################################################################
 
-#see what args we have
- 
+
 def main(argv):
 
     #set up default colours
@@ -159,8 +154,7 @@ def main(argv):
             print ("the colour should be specified as a 24bit hex colour\n")
             print ("go to https://htmlcolorcodes.com for a colour picker which provides hexcodes\n\n")
             print ("NB limit input checking or error checking, be careful\n\n")
-            print ("example:   python mkBMP.py -i dna.txt -o myDNA.bmp -s 16 -c 8B4232 -a 155995 -g DEA246 -t 462945")
-          
+            print ("example:   python mkBMP.py -i dna.txt -o myDNA.bmp -s 16 -c 8B4232 -a 155995 -g DEA246 -t 462945") 
             sys.exit()
         elif opt in ("-i", "--inputfile"):
             inputfile = arg
@@ -198,45 +192,39 @@ def main(argv):
         print ("Warning: scale was set to ", scale)
         print ("Shrinking is not implemented")
         print ("Resetting to scalefactor = 1\n\n")
-   
+      
     print ("Scale factor: ", scale) 
     
-
-
-#Create pixel array + get its properties dynamicaly
-
-#Read as a string and make an array 
+    #Read as a string and make an array 
     with open (inputfile, 'r') as readObject:
         rawArray=readObject.read()
-
+        
+    #cut out anything except simple text, no CR LFs
     stripped = lambda s: "".join(i for i in s if 31 < ord(i) < 127)
     imageArray = stripped(rawArray)
     rowLen = 256  #How many rows this bitmap contains before scaling
     rows = math.floor(len(imageArray)/rowLen)  # BMP can't have incomplete rows, no padding so chop the incomplete row
-    #change our hex colours string in to tuples
     
+    #change our hex colours string in to tuples
     tGuanine = hex2rgb(guanine)
     tThymine = hex2rgb(thymine)
     tAdenine = hex2rgb(adenine)
     tCytosine = hex2rgb(cytosine)
     
-   
-
+    #generate the byte array for the bitmap.  Pass the text array and the colour scheme.
     pixelArray = genBitMap2(imageArray, rowLen, rows, scale, tGuanine, tThymine, tAdenine, tCytosine)
-#size the bitmap according to the number of elements in the array 
     
-    
-    width = rowLen*scale #our scale factor
+    #size the bitmap according to the number of elements in the array and multiply by our scale factor
+    width = rowLen*scale 
     height = rows*scale
     size = len(pixelArray)
 
-#Create both the dib and bmp headers given the pixel array.
+    #Create both the dib and bmp headers given the pixel array.
     dibHeader = winDibHeader24(width,height, size)
     bmpHeader = BmpHeader(len(dibHeader), len(pixelArray))
 
-
-
-    f = open(outputfile, 'wb+') #Read/Write in binary format. **Overwrite** old file or create a new one.
+    #Read/Write in binary format. **Overwrite** old file or create a new one.
+    f = open(outputfile, 'wb+') 
     f.write(bmpHeader)
     f.write(dibHeader)
     f.write(pixelArray)
