@@ -3,23 +3,26 @@ take GTAC DNA words in a text file and turn them in to a bitmap representing the
 text file must contain a single string with no control characters. String must contain only G,C,A,T and is not case dependent 
 
 
-mkBMP.py -i inputfile -o outputfile -s scalefactor
+mkBMP.py -i <inputfile> -o <outputfile> -s <scalefactor>
+mkBMP.py --inputfile <inputfile> --outputfile <outputfile> --scalefactor <scalefactor>
 
-OR
-
-mkBMP.py --inputfile inputfile --outputfile outputfile --scalefactor scalefactor
-
-example:
-
-mkBMP.py -i dna.txt -o myShinybmp.bmp -s 2
-         
-input file is a txt file with genetic data
-input file must only contain GTAC with no control codes such as line feed or carriage return
+input file is a txt file with genetic data in plain text GTAC etc
 
 output file is the destination of the bitmap
 NB if the file exists it will be clobbered
-  
+
 scale factor is a factor to enlarge each pixel by
-scale factor must be an unsigned integer ie >1 and a whole number
-we are not shrinking the bitmap and we are not having half pixels
-factor 16 will give a bmp of width 4096 pixels  
+scale factor must be a positive whole number
+scale factor 16 provides a 4096 pixel width
+
+default colour scheme can be overriden
+the switches are -g -t -a -c for guanine, thymine, adenine, and cytosine respectively
+the colour should be specified as a 24bit hex colour
+
+go to https://htmlcolorcodes.com for a colour picker which provides hexcodes
+
+
+NB limit input checking or error checking, be careful
+
+
+example:   python mkBMP.py -i dna.txt -o myDNA.bmp -s 16 -c 8B4232 -a 155995 -g DEA246 -t 462945
